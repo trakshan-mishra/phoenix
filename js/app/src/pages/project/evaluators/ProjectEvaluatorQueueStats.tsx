@@ -339,11 +339,11 @@ function QueuedStat({
           <Flex direction="row" gap="size-50" alignItems="baseline">
             <StatValue
               color={
-                queue.status === "OVERLOADED"
-                  ? "danger"
-                  : queue.atCapacity
-                    ? "warning"
-                    : null
+                queue.atCapacity
+                  ? queue.status === "OVERLOADED"
+                    ? "danger"
+                    : "warning"
+                  : null
               }
             >
               {intFormatter(queue.queuedCount)}
