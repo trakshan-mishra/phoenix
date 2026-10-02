@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<44f0b56dc8d22ce258a66ec1b371c3d7>>
+ * @generated SignedSource<<ebe5b13fa0056760fd58529494aa059a>>
  * @lightSyntaxTransform
  */
 
@@ -300,6 +300,13 @@ return {
                           "args": null,
                           "kind": "ScalarField",
                           "name": "droppedCount",
+                          "storageKey": null
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "kind": "ScalarField",
+                          "name": "overflowedCount",
                           "storageKey": null
                         },
                         {
