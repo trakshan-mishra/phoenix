@@ -12,13 +12,13 @@ import { graphql, useLazyLoadQuery } from "react-relay";
 
 import {
   Flex,
-  ProgressBar,
   RichTooltip,
   Text,
   TooltipArrow,
   TooltipTrigger,
   View,
 } from "@phoenix/components";
+import { useCategoryChartColors } from "@phoenix/components/chart";
 import type { BadgeVariant } from "@phoenix/components/core/badge";
 import { Badge } from "@phoenix/components/core/badge";
 import { ErrorBoundary } from "@phoenix/components/exception/ErrorBoundary";
@@ -27,6 +27,7 @@ import type {
   ProjectEvaluatorQueueStatsQuery,
   ProjectEvaluatorQueueStatsQuery$data,
 } from "@phoenix/pages/project/evaluators/__generated__/ProjectEvaluatorQueueStatsQuery.graphql";
+import { EvaluationQueueMeter } from "@phoenix/pages/project/evaluators/EvaluationQueueMeter";
 import { formatElapsedShort } from "@phoenix/pages/project/evaluators/projectEvaluatorTypes";
 import { assertUnreachable } from "@phoenix/typeUtils";
 import { intFormatter } from "@phoenix/utils/numberFormatUtils";
@@ -92,11 +93,6 @@ function getQueueStatusDetail(queue: EvaluationQueue): string | null {
   }
 }
 
-/** Fills the meter in the warning color once the queue is full. */
-const fullMeterCSS = css`
-  --mod-barloader-fill-color: var(--global-color-warning);
-`;
-
 /** A per-minute rate as a whole number per hour. */
 function formatPerHour(perMinute: number): string {
   return intFormatter(Math.round(perMinute * 60));
@@ -115,15 +111,15 @@ function sum(values: ReadonlyArray<number>): number {
 export function ProjectEvaluatorQueueStats({
   projectId,
   refreshKey,
-  statusAction,
+  action,
 }: {
   projectId: string;
   /** Changes when the queue was changed from this page, to refetch at once. */
   refreshKey: number;
-  /** Shown beside the status, such as the button that clears the queue. */
-  statusAction?: ReactNode;
+  /** Shown at the right end of the row, such as the button that clears the queue. */
+  action?: ReactNode;
 }) {
-  const placeholder = <QueueStatsPlaceholder statusAction={statusAction} />;
+  const placeholder = <QueueStatsPlaceholder />;
   return (
     <View
       paddingX="size-200"
@@ -132,15 +128,25 @@ export function ProjectEvaluatorQueueStats({
       borderBottomColor="default"
       flex="none"
     >
-      <ErrorBoundary fallback={() => placeholder}>
-        <Suspense fallback={placeholder}>
-          <ProjectEvaluatorQueueStatsContent
-            projectId={projectId}
-            refreshKey={refreshKey}
-            statusAction={statusAction}
-          />
-        </Suspense>
-      </ErrorBoundary>
+      <Flex
+        direction="row"
+        justifyContent="space-between"
+        alignItems="start"
+        gap="size-200"
+      >
+        <ErrorBoundary fallback={() => placeholder}>
+          <Suspense fallback={placeholder}>
+            <ProjectEvaluatorQueueStatsContent
+              projectId={projectId}
+              refreshKey={refreshKey}
+            />
+          </Suspense>
+        </ErrorBoundary>
+        {action != null ? (
+          // An empty label keeps the action level with the values.
+          <Stat label="">{action}</Stat>
+        ) : null}
+      </Flex>
     </View>
   );
 }
@@ -148,11 +154,9 @@ export function ProjectEvaluatorQueueStats({
 function ProjectEvaluatorQueueStatsContent({
   projectId,
   refreshKey,
-  statusAction,
 }: {
   projectId: string;
   refreshKey: number;
-  statusAction?: ReactNode;
 }) {
   const [pollKey, setPollKey] = useState(0);
   useEffect(() => {
@@ -208,8 +212,9 @@ function ProjectEvaluatorQueueStatsContent({
     )
   );
   return (
-    <Flex direction="row" gap="size-400" alignItems="start">
-      <QueueStatusStat queue={queue} statusAction={statusAction} />
+    // Columns stretch to the tallest, so the status hover can open below the queue bar.
+    <Flex direction="row" gap="size-400" alignItems="stretch">
+      <QueueStatusStat queue={queue} />
       <QueuedStat queue={queue} projectQueuedCount={projectQueuedCount} />
       <QueueRateStat
         label="Added"
@@ -229,17 +234,17 @@ function ProjectEvaluatorQueueStatsContent({
 }
 
 /** The strip's shape while the queue loads, so the page doesn't shift. */
-function QueueStatsPlaceholder({ statusAction }: { statusAction: ReactNode }) {
+function QueueStatsPlaceholder() {
   return (
     <Flex direction="row" gap="size-400" alignItems="start">
-      <Stat label="Status">
-        <Flex direction="row" gap="size-100" alignItems="center">
-          <StatValue>--</StatValue>
-          {statusAction}
-        </Flex>
+      <Stat label="Status" isStatus>
+        <StatValue>--</StatValue>
       </Stat>
       <Stat label="Queued">
-        <StatValue>--</StatValue>
+        <Flex direction="column" gap="size-50">
+          <StatValue>--</StatValue>
+          <EvaluationQueueMeter segments={[]} limit={1} />
+        </Flex>
       </Stat>
       <Stat label="Added">
         <StatValue>--</StatValue>
@@ -254,28 +259,29 @@ function QueueStatsPlaceholder({ statusAction }: { statusAction: ReactNode }) {
   );
 }
 
-function QueueStatusStat({
-  queue,
-  statusAction,
-}: {
-  queue: EvaluationQueue;
-  statusAction: ReactNode;
-}) {
+function QueueStatusStat({ queue }: { queue: EvaluationQueue }) {
   const badge = QUEUE_STATUS_BADGE[queue.status];
   const detail = getQueueStatusDetail(queue);
   return (
-    <Stat label="Status">
-      <Flex direction="row" gap="size-100" alignItems="center">
-        <HoverDetail
-          detail={detail != null ? <Text size="S">{detail}</Text> : null}
-        >
+    <Stat label="Status" isStatus>
+      <HoverDetail
+        fill
+        detail={detail != null ? <Text size="S">{detail}</Text> : null}
+      >
+        <div css={statValueRowCSS}>
           <Badge variant={badge.variant}>{badge.label}</Badge>
-        </HoverDetail>
-        {statusAction}
-      </Flex>
+        </div>
+      </HoverDetail>
     </Stat>
   );
 }
+
+/** Each kind of evaluation's color in the queue meter and its legend. */
+const QUEUE_METER_COLOR_BY_TARGET = {
+  SPAN: "category1",
+  TRACE: "category2",
+  SESSION: "category3",
+} as const;
 
 function QueuedStat({
   queue,
@@ -284,17 +290,25 @@ function QueuedStat({
   queue: EvaluationQueue;
   projectQueuedCount: number;
 }) {
+  const colors = useCategoryChartColors();
+  const segments = queue.targets.map((target) => {
+    const color =
+      QUEUE_METER_COLOR_BY_TARGET[
+        target.evaluationTarget as keyof typeof QUEUE_METER_COLOR_BY_TARGET
+      ] ?? "category4";
+    return {
+      id: target.evaluationTarget,
+      label: getQueueLabel(target).toLowerCase(),
+      count: target.queuedCount,
+      color: colors[color],
+    };
+  });
   return (
     <Stat label="Queued">
+      {/* The hover spans the bar and legend, so it opens below them. */}
       <HoverDetail
         detail={
           <>
-            {queue.targets.map((target) => (
-              <Text key={target.evaluationTarget} size="S">
-                {`${getQueueLabel(target)}: ${intFormatter(target.queuedCount)}`}
-              </Text>
-            ))}
-            <Text size="S">{`Limit: ${intFormatter(queue.queuedLimit)}`}</Text>
             <Text size="S">{`This project: ${intFormatter(projectQueuedCount)}`}</Text>
             {queue.retryingCount > 0 ? (
               <Text size="S">{`Retrying: ${intFormatter(queue.retryingCount)}`}</Text>
@@ -305,26 +319,16 @@ function QueuedStat({
           </>
         }
       >
-        <Flex direction="row" gap="size-100" alignItems="center">
-          <StatValue color={queue.atCapacity ? "warning" : null}>
-            {intFormatter(queue.queuedCount)}
-          </StatValue>
-          <Flex direction="column" gap="size-25">
-            {queue.targets.map((target) => (
-              <span
-                key={target.evaluationTarget}
-                css={queue.atCapacity ? fullMeterCSS : undefined}
-              >
-                <ProgressBar
-                  width="80px"
-                  height="4px"
-                  value={Math.min(target.queuedCount, queue.queuedLimit)}
-                  maxValue={queue.queuedLimit}
-                  aria-label={`How much of the queue ${getQueueLabel(target).toLowerCase()} take up`}
-                />
-              </span>
-            ))}
+        <Flex direction="column" gap="size-50">
+          <Flex direction="row" gap="size-50" alignItems="baseline">
+            <StatValue color={queue.atCapacity ? "warning" : null}>
+              {intFormatter(queue.queuedCount)}
+            </StatValue>
+            <Text size="S" color="text-700">
+              {`/ ${intFormatter(queue.queuedLimit)}`}
+            </Text>
           </Flex>
+          <EvaluationQueueMeter segments={segments} limit={queue.queuedLimit} />
         </Flex>
       </HoverDetail>
     </Stat>
@@ -402,13 +406,47 @@ function QueueWaitStat({ queue }: { queue: EvaluationQueue }) {
   );
 }
 
-function Stat({ label, children }: { label: string; children: ReactNode }) {
+/** Wide enough for the widest status badge, so the stats beside it never shift. */
+const statusColumnCSS = css`
+  min-width: 88px;
+`;
+
+/** The value row is one large line tall, so a badge or button centers on it. */
+const statValueRowCSS = css`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: var(--global-line-height-l);
+`;
+
+/** Makes a hover trigger fill the rest of its column, so its hover opens below the row. */
+const fillTriggerCSS = css`
+  display: block;
+  flex: 1 1 auto;
+`;
+
+function Stat({
+  label,
+  children,
+  isStatus = false,
+}: {
+  label: string;
+  children: ReactNode;
+  /** Reserves the width of the widest status badge. */
+  isStatus?: boolean;
+}) {
   return (
-    <Flex direction="column" flex="none">
+    <Flex
+      direction="column"
+      flex="none"
+      css={isStatus ? statusColumnCSS : undefined}
+    >
       <Text elementType="h3" size="S" color="text-700">
-        {label}
+        {/* A non-breaking space keeps an unlabeled column's rows aligned. */}
+        {label || "\u00a0"}
       </Text>
-      {children}
+      {isStatus ? children : <div css={statValueRowCSS}>{children}</div>}
     </Flex>
   );
 }
@@ -430,10 +468,13 @@ function StatValue({
 function HoverDetail({
   detail,
   children,
+  fill = false,
 }: {
   /** Shown on hover; null for a value that needs no explanation. */
   detail: ReactNode;
   children: ReactNode;
+  /** Fills the rest of the column, so the hover opens below the whole row. */
+  fill?: boolean;
 }) {
   if (detail == null) {
     return children;
@@ -441,10 +482,13 @@ function HoverDetail({
   return (
     <TooltipTrigger delay={0}>
       <Focusable>
-        <span role="button">{children}</span>
+        <span role="button" css={fill ? fillTriggerCSS : undefined}>
+          {children}
+        </span>
       </Focusable>
       {/* Sized to its lines, so a queue's line never wraps. */}
-      <RichTooltip placement="bottom" width="max-content">
+      {/* Extends right from the stat, so it never reaches back over the queue bar. */}
+      <RichTooltip placement="bottom start" width="max-content">
         <TooltipArrow />
         <Flex direction="column" gap="size-50">
           {detail}
