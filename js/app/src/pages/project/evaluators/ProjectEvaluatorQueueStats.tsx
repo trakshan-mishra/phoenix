@@ -337,7 +337,15 @@ function QueuedStat({
       >
         <Flex direction="column" gap="size-50">
           <Flex direction="row" gap="size-50" alignItems="baseline">
-            <StatValue color={queue.atCapacity ? "warning" : null}>
+            <StatValue
+              color={
+                queue.status === "OVERLOADED"
+                  ? "danger"
+                  : queue.atCapacity
+                    ? "warning"
+                    : null
+              }
+            >
               {intFormatter(queue.queuedCount)}
             </StatValue>
             <Text size="S" color="text-700">
@@ -470,7 +478,7 @@ function StatValue({
   color = null,
   children,
 }: {
-  color?: "warning" | null;
+  color?: "warning" | "danger" | null;
   children: ReactNode;
 }) {
   return (
