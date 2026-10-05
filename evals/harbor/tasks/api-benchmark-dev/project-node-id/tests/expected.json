@@ -1,0 +1,5 @@
+{
+  "reference": "UHJvamVjdDoxMjc=",
+  "notes": "That id decodes to Project:127. Accept the id with or without the decoded form.",
+  "source": "solution/solve.py against the sql-benchmark fixture through the Phoenix REST and GraphQL APIs; cross-checked with sqlite3 on the scrubbed dump on 2026-10-05"
+}
