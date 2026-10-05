@@ -19,7 +19,9 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 annotations = rest_pages(
-    "/projects/mobile-review-queue/session_annotations", session_ids="chaotic-eval-run-51", limit=100
+    "/projects/mobile-review-queue/session_annotations",
+    session_ids="chaotic-eval-run-51",
+    limit=100,
 )
 parts = []
 for a in sorted(annotations, key=lambda a: (a["name"], a["created_at"])):

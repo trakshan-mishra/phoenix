@@ -18,8 +18,10 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-span = graphql('query($s: String!) { getSpanByOtelId(spanId: $s) { tokenCountPrompt tokenCountCompletion attributes } }',
-               {"s": "24aed90fbeebb7c2"})["getSpanByOtelId"]
+span = graphql(
+    "query($s: String!) { getSpanByOtelId(spanId: $s) { tokenCountPrompt tokenCountCompletion attributes } }",
+    {"s": "24aed90fbeebb7c2"},
+)["getSpanByOtelId"]
 write_answer(
     f"{span['tokenCountPrompt']} prompt tokens, {span['tokenCountCompletion']} completion tokens, "
     f"model {attribute(span['attributes'], 'llm.model_name')}"

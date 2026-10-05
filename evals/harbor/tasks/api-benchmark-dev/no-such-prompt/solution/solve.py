@@ -20,5 +20,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 
 version = rest("/prompts/customer-support-agent/latest", missing_ok=True)
 write_answer(
-    "no prompt named customer-support-agent exists" if version is None else version["data"]["model_name"]
+    "no prompt named customer-support-agent exists"
+    if version is None
+    else version["data"]["model_name"]
 )

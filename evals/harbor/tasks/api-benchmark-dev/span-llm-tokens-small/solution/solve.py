@@ -21,7 +21,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 spans = [
     e["node"]
     for e in graphql(
-        'query($t: String!) { getTraceByOtelId(traceId: $t) { spans(first: 100) { edges { node { spanId spanKind tokenCountPrompt tokenCountCompletion tokenCountTotal attributes } } } } }',
+        "query($t: String!) { getTraceByOtelId(traceId: $t) { spans(first: 100) { edges { node { spanId spanKind tokenCountPrompt tokenCountCompletion tokenCountTotal attributes } } } } }",
         {"t": "660d6a9fe57e74b3b64d7e075d20ec78"},
     )["getTraceByOtelId"]["spans"]["edges"]
 ]

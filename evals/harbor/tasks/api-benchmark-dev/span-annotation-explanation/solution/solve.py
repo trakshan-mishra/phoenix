@@ -25,4 +25,6 @@ annotations = rest_pages(
     limit=100,
 )
 (a,) = annotations
-write_answer(f"label {a['result']['label']}, score {a['result']['score']}: {a['result']['explanation']}")
+write_answer(
+    f"label {a['result']['label']}, score {a['result']['score']}: {a['result']['explanation']}"
+)

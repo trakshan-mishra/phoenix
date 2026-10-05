@@ -19,8 +19,12 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 dataset = graphql(
-    'query($id: ID!) { node(id: $id) { ... on Dataset { datasetEvaluators(first: 50) { edges { node { name project { name traceCount } } } } } } }',
+    "query($id: ID!) { node(id: $id) { ... on Dataset { datasetEvaluators(first: 50) { edges { node { name project { name traceCount } } } } } } }",
     {"id": dataset_id("banking_saas_dataset_clean")},
 )["node"]
-(evaluator,) = [e["node"] for e in dataset["datasetEvaluators"]["edges"] if e["node"]["name"] == "safe_sql_exact_match"]
+(evaluator,) = [
+    e["node"]
+    for e in dataset["datasetEvaluators"]["edges"]
+    if e["node"]["name"] == "safe_sql_exact_match"
+]
 write_answer(f"{evaluator['project']['name']} with {evaluator['project']['traceCount']} traces")

@@ -18,8 +18,10 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-span = graphql('query($s: String!) { getSpanByOtelId(spanId: $s) { name spanKind trace { traceId project { name } } } }',
-               {"s": "c131b0bee8049eb2"})["getSpanByOtelId"]
+span = graphql(
+    "query($s: String!) { getSpanByOtelId(spanId: $s) { name spanKind trace { traceId project { name } } } }",
+    {"s": "c131b0bee8049eb2"},
+)["getSpanByOtelId"]
 write_answer(
     f"{span['name']}, a {span['spanKind'].upper()} span, in project {span['trace']['project']['name']} "
     f"(trace {span['trace']['traceId']})"

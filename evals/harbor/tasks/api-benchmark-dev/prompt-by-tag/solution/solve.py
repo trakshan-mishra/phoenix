@@ -25,5 +25,7 @@ for prompt in prompts:
     if version:
         tags = rest_pages(f"/prompt_versions/{version['data']['id']}/tags", limit=100)
         (tag,) = [t for t in tags if t["name"] == "staging"]
-        hits.append(f"version {version['data']['id']} of {prompt['name']} ({tag.get('description')!r})")
+        hits.append(
+            f"version {version['data']['id']} of {prompt['name']} ({tag.get('description')!r})"
+        )
 write_answer("; ".join(hits) or "no version carries the staging tag")

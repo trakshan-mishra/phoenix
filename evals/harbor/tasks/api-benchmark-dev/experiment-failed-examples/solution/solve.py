@@ -18,7 +18,9 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-experiment = experiment_by_name("github-support-triage-tool-routing", "Luna first-tool routing — validated evaluator")
+experiment = experiment_by_name(
+    "github-support-triage-tool-routing", "Luna first-tool routing — validated evaluator"
+)
 runs = experiment_runs(experiment["id"])
 failed = sorted(
     r["example"]["revision"]["metadata"]["scenario"]

@@ -18,9 +18,12 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-experiment = experiment_by_name("github-support-triage-tool-routing", "Luna first-tool routing baseline")
+experiment = experiment_by_name(
+    "github-support-triage-tool-routing", "Luna first-tool routing baseline"
+)
 (version,) = [
-    v for v in rest_pages(f"/datasets/{experiment['dataset_id']}/versions", limit=100)
+    v
+    for v in rest_pages(f"/datasets/{experiment['dataset_id']}/versions", limit=100)
     if v["version_id"] == experiment["dataset_version_id"]
 ]
 write_answer(f"version {version['version_id']}: {version['description']!r}")

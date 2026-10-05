@@ -18,7 +18,9 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-experiment = experiment_by_name("PXI E2E Agent Tests", "pxi-e2e-docs-smoke-2026-05-04T14-34-34-020Z")
+experiment = experiment_by_name(
+    "PXI E2E Agent Tests", "pxi-e2e-docs-smoke-2026-05-04T14-34-34-020Z"
+)
 meta = experiment["metadata"]
 write_answer(
     f"assistant {meta.get('assistantModel')}, judge {meta.get('judgeModel')} "

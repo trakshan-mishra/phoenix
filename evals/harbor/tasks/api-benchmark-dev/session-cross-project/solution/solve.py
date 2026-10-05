@@ -19,7 +19,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 session = graphql(
-    'query($s: String!) { getProjectSessionById(sessionId: $s) { numTraces project { name } traces(first: 100) { edges { node { project { name } } } } } }',
+    "query($s: String!) { getProjectSessionById(sessionId: $s) { numTraces project { name } traces(first: 100) { edges { node { project { name } } } } } }",
     {"s": "incident-2026-08-06-checkout"},
 )["getProjectSessionById"]
 counts = Counter(e["node"]["project"]["name"] for e in session["traces"]["edges"])

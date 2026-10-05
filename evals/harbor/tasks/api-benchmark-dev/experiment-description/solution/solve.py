@@ -18,5 +18,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-experiment = experiment_by_name("banking_saas_dataset_clean", "safe-sql prompt v3 authorization fix")
+experiment = experiment_by_name(
+    "banking_saas_dataset_clean", "safe-sql prompt v3 authorization fix"
+)
 write_answer(str(experiment["description"]))

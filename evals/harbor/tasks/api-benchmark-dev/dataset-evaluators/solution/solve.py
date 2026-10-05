@@ -19,7 +19,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 dataset = graphql(
-    'query($id: ID!) { node(id: $id) { ... on Dataset { datasetEvaluators(first: 50) { edges { node { name } } } } } }',
+    "query($id: ID!) { node(id: $id) { ... on Dataset { datasetEvaluators(first: 50) { edges { node { name } } } } } }",
     {"id": dataset_id("banking_saas_dataset")},
 )["node"]
 write_answer(", ".join(sorted(e["node"]["name"] for e in dataset["datasetEvaluators"]["edges"])))

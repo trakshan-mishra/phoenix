@@ -18,7 +18,10 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-span = graphql('query($s: String!) { getSpanByOtelId(spanId: $s) { containedInDataset } }', {"s": "1b91cd85d269b2b3"})["getSpanByOtelId"]
+span = graphql(
+    "query($s: String!) { getSpanByOtelId(spanId: $s) { containedInDataset } }",
+    {"s": "1b91cd85d269b2b3"},
+)["getSpanByOtelId"]
 datasets = graphql(
     "{ datasets(first: 50) { edges { node { name"
     " examples(first: 100) { edges { node { id span { spanId } } } } } } } }"

@@ -18,4 +18,8 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-write_answer(", ".join(sorted(e["name"] for e in graphql("{ builtInEvaluators { name } }")["builtInEvaluators"])))
+write_answer(
+    ", ".join(
+        sorted(e["name"] for e in graphql("{ builtInEvaluators { name } }")["builtInEvaluators"])
+    )
+)

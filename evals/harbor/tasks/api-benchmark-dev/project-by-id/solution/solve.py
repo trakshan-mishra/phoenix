@@ -18,5 +18,8 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-project = graphql('query($id: ID!) { node(id: $id) { ... on Project { name traceCount } } }', {"id": "UHJvamVjdDoz"})["node"]
+project = graphql(
+    "query($id: ID!) { node(id: $id) { ... on Project { name traceCount } } }",
+    {"id": "UHJvamVjdDoz"},
+)["node"]
 write_answer(f"{project['name']} with {project['traceCount']} traces")

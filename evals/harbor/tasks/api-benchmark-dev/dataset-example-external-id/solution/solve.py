@@ -20,14 +20,29 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 
 did = dataset_id("experiment_observations")
 examples = rest(f"/datasets/{did}/examples")["data"]["examples"]
-(example,) = [e for e in examples if str(e["metadata"].get("pytest_nodeid", "")).rstrip("]").endswith("compare-only-no-patch")]
+(example,) = [
+    e
+    for e in examples
+    if str(e["metadata"].get("pytest_nodeid", "")).rstrip("]").endswith("compare-only-no-patch")
+]
 versions = sorted(
-    (e["node"]["id"] for e in graphql('query($id: ID!) { node(id: $id) { ... on Dataset { versions(first: 50) { edges { node { id } } } } } }', {"id": did})["node"]["versions"]["edges"]),
+    (
+        e["node"]["id"]
+        for e in graphql(
+            "query($id: ID!) { node(id: $id) { ... on Dataset { versions(first: 50) { edges { node { id } } } } } }",
+            {"id": did},
+        )["node"]["versions"]["edges"]
+    ),
     key=rowid,
 )
 MEMBERS = "query($id: ID!, $v: ID!) { node(id: $id) { ... on Dataset { examples(datasetVersionId: $v, first: 100) { edges { node { id } } } } } }"
 for index, version in enumerate(versions, start=1):
-    members = {e["node"]["id"] for e in graphql(MEMBERS, {"id": did, "v": version})["node"]["examples"]["edges"]}
+    members = {
+        e["node"]["id"]
+        for e in graphql(MEMBERS, {"id": did, "v": version})["node"]["examples"]["edges"]
+    }
     if example["node_id"] in members:
         break
-write_answer(f"example {example['node_id']}, added in version {index} of {len(versions)} (version id {rowid(version)})")
+write_answer(
+    f"example {example['node_id']}, added in version {index} of {len(versions)} (version id {rowid(version)})"
+)

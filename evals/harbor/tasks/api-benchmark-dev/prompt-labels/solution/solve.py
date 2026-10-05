@@ -18,8 +18,18 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-labels = [e["node"] for e in graphql("{ promptLabels { edges { node { name color description } } } }")["promptLabels"]["edges"]]
-prompts = [e["node"] for e in graphql("{ prompts(first: 100) { edges { node { name labels { name } } } } }")["prompts"]["edges"]]
+labels = [
+    e["node"]
+    for e in graphql("{ promptLabels { edges { node { name color description } } } }")[
+        "promptLabels"
+    ]["edges"]
+]
+prompts = [
+    e["node"]
+    for e in graphql("{ prompts(first: 100) { edges { node { name labels { name } } } } }")[
+        "prompts"
+    ]["edges"]
+]
 (label,) = [item for item in labels if item["name"] == "evaluator"]
 tagged = [p["name"] for p in prompts if any(item["name"] == "evaluator" for item in p["labels"])]
 write_answer(f"{', '.join(tagged)}; colour {label['color']}; {label['description']!r}")

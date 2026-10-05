@@ -20,7 +20,8 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 
 examples = rest(f"/datasets/{dataset_id('phoenix-issue-triage-initial-responses')}/examples")
 (example,) = [
-    e for e in examples["data"]["examples"]
+    e
+    for e in examples["data"]["examples"]
     if str(e["input"].get("issue", "")).startswith("https://github.com/")
 ]
 meta = example["metadata"]

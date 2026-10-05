@@ -22,4 +22,6 @@ versions = sorted(
     rest_pages(f"/datasets/{dataset_id('High Token Count Spans (>20k)')}/versions", limit=100),
     key=lambda v: v["created_at"],
 )
-write_answer(f"second version: {versions[1]['description']!r} (first: {versions[0]['description']!r})")
+write_answer(
+    f"second version: {versions[1]['description']!r} (first: {versions[0]['description']!r})"
+)

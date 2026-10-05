@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import shutil
 import stat
+import subprocess
 from pathlib import Path
 from typing import TypedDict
 
@@ -2152,6 +2153,10 @@ def main() -> None:
         if '"' in item["description"]:
             raise SystemExit(f"{item['slug']}: task.toml descriptions cannot contain double quotes")
         write(item)
+    # The code snippets are string literals, so the formatter never saw them.
+    subprocess.run(
+        ["uv", "run", "ruff", "format", "-q", *(HERE / item["slug"] for item in SPECS)], check=True
+    )
     print(f"wrote {len(SPECS)} tasks under {HERE}")
 
 

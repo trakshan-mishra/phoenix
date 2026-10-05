@@ -19,7 +19,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 session = graphql(
-    'query($s: String!) { getProjectSessionById(sessionId: $s) { numTraces numTracesWithError traces(first: 100) { edges { node { traceId errorCount } } } } }',
+    "query($s: String!) { getProjectSessionById(sessionId: $s) { numTraces numTracesWithError traces(first: 100) { edges { node { traceId errorCount } } } } }",
     {"s": "chaotic-eval-run-51"},
 )["getProjectSessionById"]
 errored = [e["node"]["traceId"] for e in session["traces"]["edges"] if e["node"]["errorCount"]]

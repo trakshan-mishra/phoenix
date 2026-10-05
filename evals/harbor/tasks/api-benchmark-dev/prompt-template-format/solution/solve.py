@@ -21,4 +21,6 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 version = rest("/prompts/banking/latest")["data"]
 first = version["template"]["messages"][0]
 text = first["content"][0]["text"] if isinstance(first["content"], list) else first["content"]
-write_answer(f"{version['template_format']}, a {version['template_type']} template; it begins {text[:200]!r}")
+write_answer(
+    f"{version['template_format']}, a {version['template_type']} template; it begins {text[:200]!r}"
+)

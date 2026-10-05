@@ -20,7 +20,9 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 
 prompts = [
     e["node"]
-    for e in graphql("{ prompts(first: 100) { edges { node { name versionTags { name promptVersionId } } } } }")["prompts"]["edges"]
+    for e in graphql(
+        "{ prompts(first: 100) { edges { node { name versionTags { name promptVersionId } } } } }"
+    )["prompts"]["edges"]
 ]
 tags = [(p["name"], t["name"], t["promptVersionId"]) for p in prompts for t in p["versionTags"]]
 write_answer(

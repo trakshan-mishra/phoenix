@@ -18,6 +18,8 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-trace = graphql('query($t: String!) { getTraceByOtelId(traceId: $t) { numSpans rootSpan { name } } }',
-                {"t": "90122be24041d5549b6d109614dd459f"})["getTraceByOtelId"]
+trace = graphql(
+    "query($t: String!) { getTraceByOtelId(traceId: $t) { numSpans rootSpan { name } } }",
+    {"t": "90122be24041d5549b6d109614dd459f"},
+)["getTraceByOtelId"]
 write_answer(f"{trace['numSpans']} spans, root span {trace['rootSpan']['name']}")

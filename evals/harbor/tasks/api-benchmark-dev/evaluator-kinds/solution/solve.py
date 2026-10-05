@@ -18,7 +18,12 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-custom = [e["node"] for e in graphql("{ evaluators(first: 100) { edges { node { kind name } } } }")["evaluators"]["edges"]]
+custom = [
+    e["node"]
+    for e in graphql("{ evaluators(first: 100) { edges { node { kind name } } } }")["evaluators"][
+        "edges"
+    ]
+]
 builtin = graphql("{ builtInEvaluators { name } }")["builtInEvaluators"]
 counts = Counter(e["kind"] for e in custom)
 write_answer(

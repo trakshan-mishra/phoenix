@@ -21,6 +21,11 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 traces = rest_pages("/projects/assistant_agent/traces", sort="start_time", order="asc", limit=1000)
 parts = []
 for trace in traces:
-    root = graphql('query($t: String!) { getTraceByOtelId(traceId: $t) { rootSpan { input { value } } } }', {"t": trace["trace_id"]})
-    parts.append(f"{trace['trace_id']} ({root['getTraceByOtelId']['rootSpan']['input']['value'][:80]!r})")
+    root = graphql(
+        "query($t: String!) { getTraceByOtelId(traceId: $t) { rootSpan { input { value } } } }",
+        {"t": trace["trace_id"]},
+    )
+    parts.append(
+        f"{trace['trace_id']} ({root['getTraceByOtelId']['rootSpan']['input']['value'][:80]!r})"
+    )
 write_answer(f"{len(traces)} traces: " + "; ".join(parts))

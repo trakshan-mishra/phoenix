@@ -21,11 +21,11 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 first = experiment_by_name("banking_saas_dataset_clean", "safe-sql prompt v1")
 rerun = experiment_by_name("banking_saas_dataset_clean", "safe-sql prompt v1 rerun")
 job = graphql(
-    'query($id: ID!) { node(id: $id) { ... on Experiment { runCount job { status lastError { message } errors(first: 50) { edges { node { category message } } } } } } }',
+    "query($id: ID!) { node(id: $id) { ... on Experiment { runCount job { status lastError { message } errors(first: 50) { edges { node { category message } } } } } } }",
     {"id": first["id"]},
 )["node"]
 summary = graphql(
-    'query($id: ID!) { node(id: $id) { ... on Experiment { runCount annotationSummaries { annotationName meanScore count } } } }',
+    "query($id: ID!) { node(id: $id) { ... on Experiment { runCount annotationSummaries { annotationName meanScore count } } } }",
     {"id": rerun["id"]},
 )["node"]
 (scores,) = summary["annotationSummaries"]

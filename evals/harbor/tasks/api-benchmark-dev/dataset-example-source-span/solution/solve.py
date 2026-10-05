@@ -19,7 +19,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 dataset = graphql(
-    'query($id: ID!) { node(id: $id) { ... on Dataset { examples(first: 100) { edges { node { id span { spanId name trace { traceId } } revision { output } } } } } } }',
+    "query($id: ID!) { node(id: $id) { ... on Dataset { examples(first: 100) { edges { node { id span { spanId name trace { traceId } } revision { output } } } } } } }",
     {"id": dataset_id("High Token Count Spans (>20k)")},
 )["node"]
 example = min((e["node"] for e in dataset["examples"]["edges"]), key=lambda e: rowid(e["id"]))

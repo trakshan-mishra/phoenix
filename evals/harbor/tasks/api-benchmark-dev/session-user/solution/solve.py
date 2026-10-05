@@ -18,5 +18,8 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-session = graphql('query($s: String!) { getProjectSessionById(sessionId: $s) { userId } }', {"s": "incident-2026-08-06-checkout"})
+session = graphql(
+    "query($s: String!) { getProjectSessionById(sessionId: $s) { userId } }",
+    {"s": "incident-2026-08-06-checkout"},
+)
 write_answer(str(session["getProjectSessionById"]["userId"]))

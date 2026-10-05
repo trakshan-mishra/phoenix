@@ -30,7 +30,9 @@ SHELL_TOOLS = frozenset({"bash", "shell", "sh", "run_terminal_cmd", "terminal", 
 
 _SERVER_PREFIX = re.compile(r"^mcp__[^_]+(?:_[^_]+)*?__")
 _CALL_TOOL = re.compile(r"""call_tool\(\s*['"]([A-Za-z0-9_]+)['"]""")
-_CAMEL_CASE = re.compile(r"^[a-z]+(?:[A-Z][A-Za-z0-9]*)+$")
+# Each group's tail excludes capitals so a run of them cannot be split two ways,
+# which would let the matcher backtrack exponentially on long names.
+_CAMEL_CASE = re.compile(r"^[a-z]+(?:[A-Z][a-z0-9]*)+$")
 # A path counts as a request to Phoenix only right after a local host, a shell
 # variable, or a bare port, so neither a grep over the installed routers/v1 package
 # nor a call to another vendor's /v1 API is a REST call.

@@ -19,7 +19,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 dataset = graphql(
-    'query($id: ID!) { node(id: $id) { ... on Dataset { experimentJobs(first: 100) { edges { node { status experiment { id name } lastError { message } } } } } } }',
+    "query($id: ID!) { node(id: $id) { ... on Dataset { experimentJobs(first: 100) { edges { node { status experiment { id name } lastError { message } } } } } } }",
     {"id": dataset_id("banking_saas_dataset")},
 )["node"]
 failed = [e["node"] for e in dataset["experimentJobs"]["edges"] if e["node"]["status"] == "ERROR"]

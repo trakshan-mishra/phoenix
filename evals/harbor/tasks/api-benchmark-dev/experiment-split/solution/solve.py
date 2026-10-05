@@ -18,5 +18,10 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-experiment = graphql('query($id: ID!) { node(id: $id) { ... on Experiment { datasetSplits { edges { node { name } } } } } }', {"id": "RXhwZXJpbWVudDo5Mw=="})
-write_answer(", ".join(e["node"]["name"] for e in experiment["node"]["datasetSplits"]["edges"]) or "none")
+experiment = graphql(
+    "query($id: ID!) { node(id: $id) { ... on Experiment { datasetSplits { edges { node { name } } } } } }",
+    {"id": "RXhwZXJpbWVudDo5Mw=="},
+)
+write_answer(
+    ", ".join(e["node"]["name"] for e in experiment["node"]["datasetSplits"]["edges"]) or "none"
+)

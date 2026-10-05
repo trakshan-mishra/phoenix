@@ -20,7 +20,8 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 
 experiment = experiment_by_name("banking_saas_dataset_clean", "safe-sql prompt v4 disambiguation")
 (run,) = [
-    r for r in experiment_runs(experiment["id"])
+    r
+    for r in experiment_runs(experiment["id"])
     if "Did I receive my paycheck this week?" in json.dumps(r["example"]["revision"]["input"])
 ]
 write_answer(f"trace {run['traceId']} in project {experiment['project_name']}")

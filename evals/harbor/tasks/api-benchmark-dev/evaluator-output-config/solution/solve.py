@@ -31,5 +31,8 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 (attachment,) = evaluator["datasetEvaluators"]
 (config,) = attachment["outputConfigs"]
 values = ", ".join(f"{v['label']} = {v['score']:g}" for v in config["values"])
-best = max(config["values"], key=lambda v: v["score"] if config["optimizationDirection"] == "MAXIMIZE" else -v["score"])
+best = max(
+    config["values"],
+    key=lambda v: v["score"] if config["optimizationDirection"] == "MAXIMIZE" else -v["score"],
+)
 write_answer(f"{values}; direction {config['optimizationDirection']}, so {best['label']} is better")

@@ -19,7 +19,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 dataset = graphql(
-    'query($id: ID!) { node(id: $id) { ... on Dataset { examples(first: 100) { edges { node { id datasetSplits { name } revision { input } } } } } } }',
+    "query($id: ID!) { node(id: $id) { ... on Dataset { examples(first: 100) { edges { node { id datasetSplits { name } revision { input } } } } } } }",
     {"id": dataset_id("banking_saas_dataset_clean")},
 )["node"]
 (example,) = [

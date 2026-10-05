@@ -18,6 +18,8 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-session = graphql('query($s: String!) { getProjectSessionById(sessionId: $s) { numTraces lastOutput { value } } }',
-                  {"s": "onboarding-walkthrough-77"})["getProjectSessionById"]
+session = graphql(
+    "query($s: String!) { getProjectSessionById(sessionId: $s) { numTraces lastOutput { value } } }",
+    {"s": "onboarding-walkthrough-77"},
+)["getProjectSessionById"]
 write_answer(f"{session['lastOutput']['value']} ({session['numTraces']} traces)")

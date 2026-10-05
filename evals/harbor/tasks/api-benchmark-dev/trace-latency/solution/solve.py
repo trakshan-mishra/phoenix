@@ -18,6 +18,9 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-trace = graphql('query($t: String!) { getTraceByOtelId(traceId: $t) { latencyMs } }', {"t": "660d6a9fe57e74b3b64d7e075d20ec78"})
+trace = graphql(
+    "query($t: String!) { getTraceByOtelId(traceId: $t) { latencyMs } }",
+    {"t": "660d6a9fe57e74b3b64d7e075d20ec78"},
+)
 ms = trace["getTraceByOtelId"]["latencyMs"]
 write_answer(f"{ms / 1000:g} seconds ({ms:g} ms)")

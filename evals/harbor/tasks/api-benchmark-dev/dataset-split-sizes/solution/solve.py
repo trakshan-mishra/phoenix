@@ -19,4 +19,6 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 splits = rest_pages(f"/datasets/{dataset_id('banking_saas_dataset_clean')}/splits", limit=100)
-write_answer(", ".join(f"{s['name']} {s['example_count']}" for s in sorted(splits, key=lambda s: s["name"])))
+write_answer(
+    ", ".join(f"{s['name']} {s['example_count']}" for s in sorted(splits, key=lambda s: s["name"]))
+)

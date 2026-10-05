@@ -19,7 +19,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 job = graphql(
-    'query($id: ID!) { node(id: $id) { ... on Experiment { job { datasetEvaluators(first: 50) { edges { node { name } } } } } } }',
+    "query($id: ID!) { node(id: $id) { ... on Experiment { job { datasetEvaluators(first: 50) { edges { node { name } } } } } } }",
     {"id": "RXhwZXJpbWVudDoxMDE="},
 )["node"]["job"]
 names = [e["node"]["name"] for e in job["datasetEvaluators"]["edges"]]

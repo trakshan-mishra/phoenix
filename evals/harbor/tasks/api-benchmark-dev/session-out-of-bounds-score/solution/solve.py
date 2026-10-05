@@ -20,7 +20,9 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 
 config = rest("/annotation_configs/response_quality")["data"]
 low, high = config["lower_bound"], config["upper_bound"]
-sessions = [s["session_id"] for s in rest_pages("/projects/mobile-review-queue/sessions", limit=100)]
+sessions = [
+    s["session_id"] for s in rest_pages("/projects/mobile-review-queue/sessions", limit=100)
+]
 annotations = rest_pages(
     "/projects/mobile-review-queue/session_annotations",
     session_ids=sessions,

@@ -19,7 +19,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 trace = graphql(
-    'query($t: String!) { getTraceByOtelId(traceId: $t) { numSpans rootSpan { spanId cumulativeTokenCountTotal cumulativeTokenCountPrompt cumulativeTokenCountCompletion } } }',
+    "query($t: String!) { getTraceByOtelId(traceId: $t) { numSpans rootSpan { spanId cumulativeTokenCountTotal cumulativeTokenCountPrompt cumulativeTokenCountCompletion } } }",
     {"t": "ff59da78f0cf706cd274464abcceab09"},
 )["getTraceByOtelId"]
 root = trace["rootSpan"]

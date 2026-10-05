@@ -19,7 +19,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 job = graphql(
-    'query($id: ID!) { node(id: $id) { ... on Experiment { job { status lastError { message } errors(first: 50) { edges { node { category message } } } } } } }',
+    "query($id: ID!) { node(id: $id) { ... on Experiment { job { status lastError { message } errors(first: 50) { edges { node { category message } } } } } } }",
     {"id": "RXhwZXJpbWVudDoxMzM="},
 )["node"]["job"]
 counts = Counter(f"{e['node']['category']} {e['node']['message']}" for e in job["errors"]["edges"])

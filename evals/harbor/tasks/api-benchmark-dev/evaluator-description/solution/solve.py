@@ -20,7 +20,9 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 
 evaluators = {
     e["node"]["name"]: e["node"]["description"]
-    for e in graphql("{ evaluators(first: 100) { edges { node { name description } } } }")["evaluators"]["edges"]
+    for e in graphql("{ evaluators(first: 100) { edges { node { name description } } } }")[
+        "evaluators"
+    ]["edges"]
 }
 write_answer(
     f"refusal_detection: {evaluators['refusal_detection']!r}; "

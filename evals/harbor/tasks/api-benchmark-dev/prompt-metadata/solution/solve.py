@@ -19,4 +19,9 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 prompts = [p for p in rest_pages("/prompts", limit=100) if p["metadata"]]
-write_answer("; ".join(f"{p['name']}: {json.dumps(p['metadata'])}" for p in sorted(prompts, key=lambda p: p["name"])))
+write_answer(
+    "; ".join(
+        f"{p['name']}: {json.dumps(p['metadata'])}"
+        for p in sorted(prompts, key=lambda p: p["name"])
+    )
+)

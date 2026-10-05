@@ -20,16 +20,26 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 
 did = dataset_id("banking_saas_dataset_auto_ids")
 versions = sorted(
-    (e["node"] for e in graphql('query($id: ID!) { node(id: $id) { ... on Dataset { versions(first: 50) { edges { node { id } } } } } }', {"id": did})["node"]["versions"]["edges"]),
+    (
+        e["node"]
+        for e in graphql(
+            "query($id: ID!) { node(id: $id) { ... on Dataset { versions(first: 50) { edges { node { id } } } } } }",
+            {"id": did},
+        )["node"]["versions"]["edges"]
+    ),
     key=lambda v: rowid(v["id"]),
 )
 EXAMPLES = (
     "query($id: ID!, $v: ID!) { node(id: $id) { ... on Dataset { examples(datasetVersionId: $v, first: 100)"
     " { edges { node { id revision(datasetVersionId: $v) { input revisionKind } } } } } } }"
 )
+
+
 def examples(version_id):
     page = graphql(EXAMPLES, {"id": did, "v": version_id})["node"]["examples"]["edges"]
     return {e["node"]["id"]: e["node"]["revision"] for e in page}
+
+
 first, second, third = (examples(v["id"]) for v in versions[:3])
 deleted = sorted(set(first) - set(second))
 created = sorted(set(second) - set(first))

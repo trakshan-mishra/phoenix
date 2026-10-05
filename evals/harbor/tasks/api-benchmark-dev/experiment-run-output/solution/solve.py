@@ -18,9 +18,12 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-experiment = experiment_by_name("banking_saas_dataset_clean", "safe-sql prompt v3 authorization fix")
+experiment = experiment_by_name(
+    "banking_saas_dataset_clean", "safe-sql prompt v3 authorization fix"
+)
 (run,) = [
-    r for r in experiment_runs(experiment["id"])
+    r
+    for r in experiment_runs(experiment["id"])
     if "Did I receive my paycheck this week?" in json.dumps(r["example"]["revision"]["input"])
 ]
 output = run["output"]

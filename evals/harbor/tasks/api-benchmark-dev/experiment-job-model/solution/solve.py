@@ -19,7 +19,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 job = graphql(
-    'query($id: ID!) { node(id: $id) { ... on Experiment { job { taskConfig { prompt { modelName modelProvider promptVersion { id sequenceNumber } } } } } } }',
+    "query($id: ID!) { node(id: $id) { ... on Experiment { job { taskConfig { prompt { modelName modelProvider promptVersion { id sequenceNumber } } } } } } }",
     {"id": "RXhwZXJpbWVudDoxMzY="},
 )["node"]["job"]
 prompt = job["taskConfig"]["prompt"]

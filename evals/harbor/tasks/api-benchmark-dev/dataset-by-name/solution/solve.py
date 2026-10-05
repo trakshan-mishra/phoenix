@@ -19,7 +19,8 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 (dataset,) = [
-    d for d in rest("/datasets", name="github-support-triage-tool-routing")["data"]
+    d
+    for d in rest("/datasets", name="github-support-triage-tool-routing")["data"]
     if d["name"] == "github-support-triage-tool-routing"
 ]
 write_answer(f"{dataset['description']!r}; id {dataset['id']}")

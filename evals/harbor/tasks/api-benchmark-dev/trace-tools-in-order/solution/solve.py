@@ -21,5 +21,9 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 spans = rest_pages(
     "/projects/incident-copilot/spans", trace_id="90122be24041d5549b6d109614dd459f", limit=1000
 )
-tools = [s["name"] for s in sorted(spans, key=lambda s: s["start_time"]) if s["span_kind"].upper() == "TOOL"]
+tools = [
+    s["name"]
+    for s in sorted(spans, key=lambda s: s["start_time"])
+    if s["span_kind"].upper() == "TOOL"
+]
 write_answer(", ".join(tools) + f" ({len(tools)} tool calls, {len(set(tools))} distinct tools)")

@@ -20,4 +20,6 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 
 models = generative_models()
 kinds = Counter(m["kind"] for m in models)
-write_answer(f"{len(models)} models: " + ", ".join(f"{n} {kind}" for kind, n in sorted(kinds.items())))
+write_answer(
+    f"{len(models)} models: " + ", ".join(f"{n} {kind}" for kind, n in sorted(kinds.items()))
+)

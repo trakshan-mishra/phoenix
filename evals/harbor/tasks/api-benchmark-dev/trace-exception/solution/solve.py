@@ -21,13 +21,11 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 spans = [
     e["node"]
     for e in graphql(
-        'query($t: String!) { getTraceByOtelId(traceId: $t) { spans(first: 100) { edges { node { spanId name events { name attributes } } } } } }',
+        "query($t: String!) { getTraceByOtelId(traceId: $t) { spans(first: 100) { edges { node { spanId name events { name attributes } } } } } }",
         {"t": "72408774085db31572128f7e60b4f76d"},
     )["getTraceByOtelId"]["spans"]["edges"]
 ]
-found = [
-    (s, ev["attributes"]) for s in spans for ev in s["events"] if ev["name"] == "exception"
-]
+found = [(s, ev["attributes"]) for s in spans for ev in s["events"] if ev["name"] == "exception"]
 write_answer(
     "; ".join(
         f"{a.get('exception.type')} on span {s['spanId']} ({s['name']}): "

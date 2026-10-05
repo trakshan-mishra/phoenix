@@ -20,10 +20,13 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 
 runs = [r for r in experiment_runs("RXhwZXJpbWVudDoxMDE=") if not r["annotations"]]
 job = graphql(
-    'query($id: ID!) { node(id: $id) { ... on Experiment { job { status errors(first: 50) { edges { node { category level message } } } } } } }',
+    "query($id: ID!) { node(id: $id) { ... on Experiment { job { status errors(first: 50) { edges { node { category level message } } } } } } }",
     {"id": "RXhwZXJpbWVudDoxMDE="},
 )["node"]["job"]
-logs = "; ".join(f"{e['node']['category']} {e['node']['level']} {e['node']['message']}" for e in job["errors"]["edges"])
+logs = "; ".join(
+    f"{e['node']['category']} {e['node']['level']} {e['node']['message']}"
+    for e in job["errors"]["edges"]
+)
 write_answer(
     "; ".join(
         f"case {r['example']['revision']['metadata'].get('case')} (example {r['example']['id']}, trace {r['traceId']})"

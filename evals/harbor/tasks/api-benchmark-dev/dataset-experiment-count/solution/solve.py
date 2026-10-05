@@ -18,5 +18,8 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-dataset = graphql('query($id: ID!) { node(id: $id) { ... on Dataset { experimentCount } } }', {"id": dataset_id("PXI E2E Agent Tests")})
+dataset = graphql(
+    "query($id: ID!) { node(id: $id) { ... on Dataset { experimentCount } } }",
+    {"id": dataset_id("PXI E2E Agent Tests")},
+)
 write_answer(str(dataset["node"]["experimentCount"]))

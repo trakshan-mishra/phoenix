@@ -19,5 +19,9 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 experiment = experiment_by_name("set_spans_filter", "set_span-64502b8e")
-count = graphql('query($id: ID!) { node(id: $id) { ... on Experiment { runCount } } }', {"id": experiment["id"]})["node"]["runCount"]
-write_answer(f"{experiment['metadata'].get('git_sha')} (model {experiment['metadata'].get('model')}), {count} runs")
+count = graphql(
+    "query($id: ID!) { node(id: $id) { ... on Experiment { runCount } } }", {"id": experiment["id"]}
+)["node"]["runCount"]
+write_answer(
+    f"{experiment['metadata'].get('git_sha')} (model {experiment['metadata'].get('model')}), {count} runs"
+)

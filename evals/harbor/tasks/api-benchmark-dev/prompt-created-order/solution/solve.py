@@ -18,6 +18,11 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-prompts = [e["node"] for e in graphql("{ prompts(first: 100) { edges { node { name createdAt } } } }")["prompts"]["edges"]]
+prompts = [
+    e["node"]
+    for e in graphql("{ prompts(first: 100) { edges { node { name createdAt } } } }")["prompts"][
+        "edges"
+    ]
+]
 latest = max(prompts, key=lambda p: p["createdAt"])
 write_answer(f"{latest['name']}, {utc(latest['createdAt'])}")

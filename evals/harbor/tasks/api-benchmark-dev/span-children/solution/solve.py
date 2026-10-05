@@ -19,7 +19,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 span = graphql(
-    'query($s: String!) { getSpanByOtelId(spanId: $s) { descendants(maxDepth: 1, first: 50) { edges { node { spanId name spanKind } } } } }',
+    "query($s: String!) { getSpanByOtelId(spanId: $s) { descendants(maxDepth: 1, first: 50) { edges { node { spanId name spanKind } } } } }",
     {"s": "6a41eb4766c2bb30"},
 )["getSpanByOtelId"]
 children = [e["node"] for e in span["descendants"]["edges"]]

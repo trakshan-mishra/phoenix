@@ -19,7 +19,12 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 (run,) = [
-    r for r in experiment_runs("RXhwZXJpbWVudDoxMDE=")
+    r
+    for r in experiment_runs("RXhwZXJpbWVudDoxMDE=")
     if r["example"]["revision"]["metadata"].get("case") == "url_without_access"
 ]
-write_answer("; ".join(f"{a['name']} {a['label']} ({a['score']:g}): {a['explanation']}" for a in run["annotations"]))
+write_answer(
+    "; ".join(
+        f"{a['name']} {a['label']} ({a['score']:g}): {a['explanation']}" for a in run["annotations"]
+    )
+)

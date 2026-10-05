@@ -18,7 +18,10 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-span = graphql('query($s: String!) { getSpanByOtelId(spanId: $s) { statusMessage input { value } } }', {"s": "0e5512ce48261dcc"})["getSpanByOtelId"]
+span = graphql(
+    "query($s: String!) { getSpanByOtelId(spanId: $s) { statusMessage input { value } } }",
+    {"s": "0e5512ce48261dcc"},
+)["getSpanByOtelId"]
 command = json.loads(span["input"]["value"])
 write_answer(
     f"status {span['statusMessage'].strip(': ')}; summary {command.get('summary')!r}; "

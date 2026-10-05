@@ -18,6 +18,15 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-experiment = experiment_by_name("github-support-triage-tool-routing", "Luna first-tool routing — validated evaluator")
-(run,) = [r for r in experiment_runs(experiment["id"]) if "Dark mode" in r["example"]["revision"]["input"]["ticket"]]
-write_answer("; ".join(f"{a['name']} {a['label']}: {a['explanation']}" for a in run["annotations"]) + f" (run {run['id']})")
+experiment = experiment_by_name(
+    "github-support-triage-tool-routing", "Luna first-tool routing — validated evaluator"
+)
+(run,) = [
+    r
+    for r in experiment_runs(experiment["id"])
+    if "Dark mode" in r["example"]["revision"]["input"]["ticket"]
+]
+write_answer(
+    "; ".join(f"{a['name']} {a['label']}: {a['explanation']}" for a in run["annotations"])
+    + f" (run {run['id']})"
+)

@@ -19,7 +19,7 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 )
 
 dataset = graphql(
-    'query($id: ID!) { node(id: $id) { ... on Dataset { datasetEvaluators(first: 50) { edges { node { name outputConfigs { ... on CategoricalAnnotationConfig { optimizationDirection } ... on ContinuousAnnotationConfig { optimizationDirection } } } } } } } }',
+    "query($id: ID!) { node(id: $id) { ... on Dataset { datasetEvaluators(first: 50) { edges { node { name outputConfigs { ... on CategoricalAnnotationConfig { optimizationDirection } ... on ContinuousAnnotationConfig { optimizationDirection } } } } } } } }",
     {"id": dataset_id("banking_saas_dataset")},
 )["node"]
 none = sorted(

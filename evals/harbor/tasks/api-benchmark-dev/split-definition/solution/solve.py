@@ -20,7 +20,9 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
 
 (split,) = [
     e["node"]
-    for e in graphql("{ datasetSplits { edges { node { name color description } } } }")["datasetSplits"]["edges"]
+    for e in graphql("{ datasetSplits { edges { node { name color description } } } }")[
+        "datasetSplits"
+    ]["edges"]
     if e["node"]["name"] == "refusal"
 ]
 per_dataset = {}

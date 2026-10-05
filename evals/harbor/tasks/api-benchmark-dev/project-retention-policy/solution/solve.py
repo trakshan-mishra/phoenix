@@ -25,5 +25,9 @@ policy = graphql(
 )["getProjectByName"]["traceRetentionPolicy"]
 rule = {k: v for k, v in policy["rule"].items() if k != "__typename"}
 days = rule.get("maxDays")
-text = f"max_days {days:g}" + (" (never deletes)" if days == 0 else "") if days is not None else str(rule)
+text = (
+    f"max_days {days:g}" + (" (never deletes)" if days == 0 else "")
+    if days is not None
+    else str(rule)
+)
 write_answer(f"{policy['name']} policy, cron {policy['cronExpression']}, rule {text}")

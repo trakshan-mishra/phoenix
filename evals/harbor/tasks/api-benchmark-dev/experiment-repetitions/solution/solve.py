@@ -18,4 +18,10 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-write_answer(str(experiment_by_name("banking_saas_dataset_clean", "safe-sql prompt v4 disambiguation")["repetitions"]))
+write_answer(
+    str(
+        experiment_by_name("banking_saas_dataset_clean", "safe-sql prompt v4 disambiguation")[
+            "repetitions"
+        ]
+    )
+)

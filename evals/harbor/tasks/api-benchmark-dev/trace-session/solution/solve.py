@@ -18,6 +18,8 @@ from harbor_verifiers.phoenix_api import (  # noqa: F401
     write_answer,
 )
 
-trace = graphql('query($t: String!) { getTraceByOtelId(traceId: $t) { session { sessionId } } }',
-                {"t": "9128cef0af42a378c2123858a6a1ce26"})["getTraceByOtelId"]
+trace = graphql(
+    "query($t: String!) { getTraceByOtelId(traceId: $t) { session { sessionId } } }",
+    {"t": "9128cef0af42a378c2123858a6a1ce26"},
+)["getTraceByOtelId"]
 write_answer(trace["session"]["sessionId"])
