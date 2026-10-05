@@ -1937,11 +1937,11 @@ type EvaluationQueue {
   queuedCount: Int!
 
   """
-  How many evaluations the queue holds before new ones wait to be queued.
+  How many evaluations the queue holds. New evaluations that do not fit are dropped, not queued.
   """
   queuedLimit: Int!
 
-  """Whether the queue is full, so new evaluations are not being queued."""
+  """Whether the queue is full, so new evaluations are dropped, not queued."""
   atCapacity: Boolean!
 
   """
@@ -1953,6 +1953,11 @@ type EvaluationQueue {
   When the longest-waiting evaluation not yet started was queued, or null if none is waiting. Evaluations awaiting a retry are not included.
   """
   oldestQueuedAt: DateTime
+
+  """
+  Evaluations not queued because the queue was full, in the last 10 minutes.
+  """
+  overflowedCount: Int!
 
   """
   Evaluations queued per minute. While the queue is at capacity, this follows the rate evaluations leave it, not the rate they are owed.
@@ -1968,17 +1973,22 @@ type EvaluationQueue {
   targets: [EvaluationQueueTarget!]!
 }
 
-"""Whether queued evaluations are running without long waits."""
+"""
+Whether new evaluations are being queued, and queued ones run without long waits.
+"""
 enum EvaluationQueueStatus {
   """
   Evaluations not yet started have waited 10 minutes or less, and new ones are being queued.
   """
   HEALTHY
 
-  """
-  The oldest evaluation not yet started has waited over 10 minutes, or the queue is at capacity.
-  """
+  """The oldest evaluation not yet started has waited over 10 minutes."""
   DEGRADED
+
+  """
+  New evaluations were dropped in the last 10 minutes because the queue was full. Takes precedence over DEGRADED.
+  """
+  OVERLOADED
 }
 
 """
@@ -1999,6 +2009,11 @@ type EvaluationQueueTarget {
   When the longest-waiting evaluation not yet started was queued, or null if none is waiting. Evaluations awaiting a retry are not included.
   """
   oldestQueuedAt: DateTime
+
+  """
+  Evaluations not queued because the queue was full, in the last 10 minutes.
+  """
+  overflowedCount: Int!
 
   """
   Evaluations queued per minute. While the queue is at capacity, this follows the rate evaluations leave it, not the rate they are owed.
@@ -3984,6 +3999,9 @@ enum ProjectEvaluatorRunStatus {
   """The most recent evaluation run failed and will not be retried."""
   ERROR
 
+  """The queue is full, so new evaluations are being dropped."""
+  OVERLOADED
+
   """
   The queue is degraded, or its own oldest waiting evaluation, including ones awaiting a retry, has waited too long.
   """
@@ -3998,7 +4016,7 @@ The state of a project evaluator's scheduled work, derived from the evaluation r
 """
 type ProjectEvaluatorRunSummary {
   """
-  DISABLED when turned off. Otherwise ERROR when the newest completed run was given up on, DEGRADED when the evaluation queue is degraded or its own oldest waiting evaluation, including ones awaiting a retry, has waited over 10 minutes, RUNNING when the newest completed run produced an annotation, QUEUED when work is waiting but none has completed, NEVER_RUN otherwise.
+  DISABLED when turned off. Otherwise ERROR when the newest completed run was given up on, OVERLOADED when the evaluation queue is overloaded, DEGRADED when it is degraded or its own oldest waiting evaluation, including ones awaiting a retry, has waited over 10 minutes, RUNNING when the newest completed run produced an annotation, QUEUED when work is waiting but none has completed, NEVER_RUN otherwise.
   """
   status: ProjectEvaluatorRunStatus!
 
@@ -4025,6 +4043,11 @@ type ProjectEvaluatorRunSummary {
   Evaluations removed from the queue before they ran, because a user cleared the queue or turned the evaluator on or off. They are not failures and do not affect the status.
   """
   droppedCount: Int!
+
+  """
+  Evaluations dropped in the last 10 minutes because the queue was full. They are not failures.
+  """
+  overflowedCount: Int!
 
   """The most recent evaluation error, or null if none was recorded."""
   lastError: String

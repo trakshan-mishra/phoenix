@@ -9,9 +9,10 @@ Every measure is read from the database, so replicas agree.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections import Counter
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-from typing import Literal, Optional, Sequence, Union
+from typing import Any, Literal, Mapping, Optional, Sequence, Union
 
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,13 +29,15 @@ from phoenix.server.types import DbSessionFactory
 
 RATE_WINDOW = timedelta(hours=1)
 DEGRADED_QUEUE_WAIT = timedelta(minutes=10)
+# A queue reads overloaded while it has dropped a new evaluation for want of room this recently.
+OVERFLOW_WINDOW = DEGRADED_QUEUE_WAIT
 EVALUATION_LOAD_WINDOW = timedelta(hours=1)
 
 EVALUATION_TARGETS: tuple[models.EvaluationTarget, ...] = ("SPAN", "TRACE", "SESSION")
 
-QueueStatus = Literal["HEALTHY", "DEGRADED"]
+QueueStatus = Literal["HEALTHY", "DEGRADED", "OVERLOADED"]
 ProjectEvaluatorRunStatus = Literal[
-    "DISABLED", "ERROR", "DEGRADED", "RUNNING", "QUEUED", "NEVER_RUN"
+    "DISABLED", "ERROR", "OVERLOADED", "DEGRADED", "RUNNING", "QUEUED", "NEVER_RUN"
 ]
 
 _WorkUnitModel = Union[
@@ -78,12 +81,15 @@ class QueuedWork:
 
 @dataclass(frozen=True)
 class TargetQueue:
-    """One evaluation target's evaluations in the queue.
+    """One evaluation target's evaluations in the queue, and those it recently dropped.
 
     ``queued_count`` counts every queued evaluation: PENDING, RUNNING, or ERROR awaiting a
     retry. ``waiting`` covers only the PENDING ones, the line itself. A retry keeps its
     place and age, so with retries included one evaluator's provider outage would read as
-    the whole line's wait.
+    the whole line's wait. ``overflowed_counts`` counts, per project evaluator, the
+    evaluations not queued because the queue was full over the last ``OVERFLOW_WINDOW``:
+    for spans from the span cursor's drop counts, since a dropped span batch leaves no
+    rows, and for traces and sessions from their OVERFLOWED rows.
     """
 
     evaluation_target: models.EvaluationTarget
@@ -91,13 +97,20 @@ class TargetQueue:
     waiting: QueuedWork
     running_count: int
     retrying_count: int
+    # Not hashed: the queue keys the loader of its rates.
+    overflowed_counts: Mapping[int, int] = field(hash=False)
+
+    @property
+    def overflowed_count(self) -> int:
+        return sum(self.overflowed_counts.values())
 
 
 @dataclass(frozen=True)
 class EvaluationQueue:
     """The queue, as measured at ``measured_at``: what it holds of each evaluation target,
-    in ``EVALUATION_TARGETS`` order, and whether it is full. Everything a status needs, and
-    nothing that costs more than reading the queued evaluations.
+    in ``EVALUATION_TARGETS`` order, whether it is full, and how many new evaluations it
+    recently dropped for want of room. Everything a status needs, and nothing that costs
+    more than reading the queued evaluations and those recent drops.
     """
 
     measured_at: datetime
@@ -132,9 +145,26 @@ class EvaluationQueue:
         return self.queued_count >= self.queued_limit
 
     @property
+    def overflowed_count(self) -> int:
+        return sum(target.overflowed_count for target in self.targets)
+
+    @property
+    def overflowed_counts(self) -> Mapping[int, int]:
+        """Recent drops per project evaluator, of every target: each project evaluator
+        evaluates one target."""
+        return {
+            project_evaluator_id: count
+            for target in self.targets
+            for project_evaluator_id, count in target.overflowed_counts.items()
+        }
+
+    @property
     def status(self) -> QueueStatus:
-        degraded = self.at_capacity or _waited_too_long(self.waiting, self.measured_at)
-        return "DEGRADED" if degraded else "HEALTHY"
+        if self.overflowed_count:
+            return "OVERLOADED"
+        if _waited_too_long(self.waiting, self.measured_at):
+            return "DEGRADED"
+        return "HEALTHY"
 
     def target(self, evaluation_target: models.EvaluationTarget) -> TargetQueue:
         return self.targets[EVALUATION_TARGETS.index(evaluation_target)]
@@ -148,7 +178,8 @@ class EvaluationQueue:
 class Throughput:
     """How fast evaluations entered and left the queue, per minute over the trailing
     ``RATE_WINDOW``: ``queued_per_minute`` counts evaluations queued, and
-    ``evaluations_per_minute`` those that left the queue evaluated or failed.
+    ``evaluations_per_minute`` those that left the queue evaluated or failed. Evaluations
+    overflowed because the queue was full never entered it, so they count in neither.
     """
 
     evaluations_per_minute: float
@@ -213,15 +244,16 @@ def project_evaluator_run_status(
     last_evaluated_at: Optional[datetime],
     last_failed_at: Optional[datetime],
     queued: QueuedWork,
-    queue_degraded: bool,
+    queue_status: QueueStatus,
     now: datetime,
 ) -> ProjectEvaluatorRunStatus:
     """A project evaluator's one status, by precedence:
-    DISABLED > ERROR > DEGRADED > RUNNING > QUEUED > NEVER_RUN.
+    DISABLED > ERROR > OVERLOADED > DEGRADED > RUNNING > QUEUED > NEVER_RUN.
 
-    A degraded queue degrades every evaluator, queued work or not, since each one's next
-    evaluation waits in that line. An evaluator's own oldest waiting evaluation, retries
-    included, degrades it alone, which catches one stuck retrying while the line moves.
+    An overloaded or degraded queue marks every evaluator, queued work or not, since each
+    one's next evaluation is offered to that queue. An evaluator's own oldest waiting
+    evaluation, retries included, degrades it alone, which catches one stuck retrying while
+    the line moves.
     """
     if not enabled:
         return "DISABLED"
@@ -229,7 +261,9 @@ def project_evaluator_run_status(
         last_evaluated_at is None or last_failed_at >= last_evaluated_at
     ):
         return "ERROR"
-    if queue_degraded or _waited_too_long(queued, now):
+    if queue_status == "OVERLOADED":
+        return "OVERLOADED"
+    if queue_status == "DEGRADED" or _waited_too_long(queued, now):
         return "DEGRADED"
     if last_evaluated_at is not None:
         return "RUNNING"
@@ -243,7 +277,7 @@ async def load_evaluation_queue(db: DbSessionFactory) -> EvaluationQueue:
     async with db.read() as session:
         targets = tuple(
             [
-                await _load_target_queue(session, evaluation_target)
+                await _load_target_queue(session, evaluation_target, measured_at)
                 for evaluation_target in EVALUATION_TARGETS
             ]
         )
@@ -257,6 +291,7 @@ async def load_evaluation_queue(db: DbSessionFactory) -> EvaluationQueue:
 async def _load_target_queue(
     session: AsyncSession,
     evaluation_target: models.EvaluationTarget,
+    measured_at: datetime,
 ) -> TargetQueue:
     queue = _QUEUES[evaluation_target]
     model = queue.work_unit_model
@@ -273,12 +308,31 @@ async def _load_target_queue(
     if head_id is not None:
         heads = await _load_heads(session, queue, [head_id])
         oldest_pending_at = heads[head_id]
+    if evaluation_target == "SPAN":
+        overflowed_counts = recent_span_overflowed_counts(
+            await session.scalar(sa.select(models.EvalSpanCursor.overflowed_counts)) or {},
+            measured_at,
+        )
+    else:
+        overflowed_counts = {
+            project_evaluator_id: count
+            for project_evaluator_id, count in await session.execute(
+                sa.select(model.project_evaluator_id, sa.func.count())
+                .where(
+                    _status_in(model, queue.terminal_statuses),
+                    model.status == "OVERFLOWED",
+                    model.updated_at >= measured_at - OVERFLOW_WINDOW,
+                )
+                .group_by(model.project_evaluator_id)
+            )
+        }
     return TargetQueue(
         evaluation_target=evaluation_target,
         queued_count=sum(count for count, _ in by_status.values()),
         waiting=QueuedWork(queued_count=pending_count, oldest_queued_at=oldest_pending_at),
         running_count=by_status.get("RUNNING", (0, None))[0],
         retrying_count=by_status.get("ERROR", (0, None))[0],
+        overflowed_counts=overflowed_counts,
     )
 
 
@@ -312,7 +366,7 @@ async def _load_target_throughput(
                 sa.func.sum(sa.case((model.status.in_(COMPLETED_EVAL_WORK_STATUSES), 1), else_=0)),
                 queued_in_window,
             ).where(
-                _status_in(model, table.terminal_statuses),
+                *_left_the_queue(table),
                 model.updated_at >= since,
             )
         )
@@ -417,6 +471,42 @@ async def _load_heads(
         sa.select(model.id, model.created_at).where(model.id.in_(head_ids))
     )
     return {head_id: queued_at for head_id, queued_at in rows}
+
+
+def span_overflow_window(
+    overflowed_counts: Mapping[str, Any],
+    now: datetime,
+) -> dict[datetime, dict[int, int]]:
+    """The span cursor's drop counts, ``{minute: {project_evaluator_id: count}}`` as stored,
+    keeping the one-minute buckets that start within the last ``OVERFLOW_WINDOW``."""
+    since = now - OVERFLOW_WINDOW
+    window: dict[datetime, dict[int, int]] = {}
+    for minute, counts in overflowed_counts.items():
+        start = datetime.fromisoformat(minute)
+        if start > since:
+            window[start] = {
+                int(project_evaluator_id): int(count)
+                for project_evaluator_id, count in counts.items()
+            }
+    return window
+
+
+def recent_span_overflowed_counts(
+    overflowed_counts: Mapping[str, Any],
+    now: datetime,
+) -> dict[int, int]:
+    """Span evaluations dropped per project evaluator over the last ``OVERFLOW_WINDOW``."""
+    totals: Counter[int] = Counter()
+    for counts in span_overflow_window(overflowed_counts, now).values():
+        totals.update(counts)
+    return dict(totals)
+
+
+def _left_the_queue(queue: _Queue) -> tuple[sa.ColumnElement[bool], ...]:
+    """Evaluations that reached an end after being queued. Overflowed ones were never
+    queued."""
+    model = queue.work_unit_model
+    return _status_in(model, queue.terminal_statuses), model.status != "OVERFLOWED"
 
 
 def _status_in(model: _WorkUnitModel, statuses: tuple[str, ...]) -> sa.ColumnElement[bool]:

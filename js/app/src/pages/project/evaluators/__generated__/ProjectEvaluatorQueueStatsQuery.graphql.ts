@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<00b56ad7b63715fd634d55ed4474c09d>>
+ * @generated SignedSource<<c811d92eebaa1819c9f5df30e12cb05a>>
  * @lightSyntaxTransform
  */
 
@@ -8,7 +8,7 @@
 // @ts-nocheck
 
 import { ConcreteRequest } from 'relay-runtime';
-export type EvaluationQueueStatus = "DEGRADED" | "HEALTHY";
+export type EvaluationQueueStatus = "DEGRADED" | "HEALTHY" | "OVERLOADED";
 export type EvaluationTarget = "SESSION" | "SPAN" | "TRACE";
 export type ProjectEvaluatorQueueStatsQuery$variables = {
   projectId: string;
@@ -27,6 +27,7 @@ export type ProjectEvaluatorQueueStatsQuery$data = {
       readonly evaluationTarget: EvaluationTarget;
       readonly evaluationsPerMinute: number;
       readonly oldestQueuedAt: string | null;
+      readonly overflowedCount: number;
       readonly queuedCount: number;
       readonly queuedPerMinute: number;
       readonly retryingCount: number;
@@ -144,6 +145,13 @@ v6 = {
         (v1/*:: as any*/),
         (v2/*:: as any*/),
         (v3/*:: as any*/),
+        {
+          "alias": null,
+          "args": null,
+          "kind": "ScalarField",
+          "name": "overflowedCount",
+          "storageKey": null
+        },
         (v4/*:: as any*/),
         (v5/*:: as any*/)
       ],
@@ -320,16 +328,16 @@ return {
     ]
   },
   "params": {
-    "cacheID": "ab182852b9ec5c2da1d03bf9c4573995",
+    "cacheID": "87c953288a09da5792e5a9c04e0dccc3",
     "id": null,
     "metadata": {},
     "name": "ProjectEvaluatorQueueStatsQuery",
     "operationKind": "query",
-    "text": "query ProjectEvaluatorQueueStatsQuery(\n  $projectId: ID!\n) {\n  evaluationQueue {\n    status\n    atCapacity\n    queuedCount\n    queuedLimit\n    retryingCount\n    oldestQueuedAt\n    queuedPerMinute\n    evaluationsPerMinute\n    targets {\n      evaluationTarget\n      queuedCount\n      retryingCount\n      oldestQueuedAt\n      queuedPerMinute\n      evaluationsPerMinute\n    }\n  }\n  project: node(id: $projectId) {\n    __typename\n    ... on Project {\n      evaluators(first: 100) {\n        edges {\n          node {\n            runSummary {\n              queuedCount\n            }\n            id\n          }\n        }\n      }\n    }\n    id\n  }\n}\n"
+    "text": "query ProjectEvaluatorQueueStatsQuery(\n  $projectId: ID!\n) {\n  evaluationQueue {\n    status\n    atCapacity\n    queuedCount\n    queuedLimit\n    retryingCount\n    oldestQueuedAt\n    queuedPerMinute\n    evaluationsPerMinute\n    targets {\n      evaluationTarget\n      queuedCount\n      retryingCount\n      oldestQueuedAt\n      overflowedCount\n      queuedPerMinute\n      evaluationsPerMinute\n    }\n  }\n  project: node(id: $projectId) {\n    __typename\n    ... on Project {\n      evaluators(first: 100) {\n        edges {\n          node {\n            runSummary {\n              queuedCount\n            }\n            id\n          }\n        }\n      }\n    }\n    id\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "8c30decfcea006c439b7c9e12ad2abe4";
+(node as any).hash = "f3d1c355f67658b3becaec71ed73784c";
 
 export default node;
